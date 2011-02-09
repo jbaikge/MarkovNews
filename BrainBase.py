@@ -22,6 +22,7 @@ class BrainBase:
 				word TEXT NOT NULL UNIQUE
 			)""",
 			"""CREATE TABLE IF NOT EXISTS wordpaths (
+				position INTEGER,
 				current INTEGER REFERENCES words(id) ON DELETE CASCADE,
 				next INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
 				origin_id INTEGER NOT NULL REFERENCES origins(id) ON DELETE CASCADE
@@ -52,3 +53,5 @@ class BrainBase:
 		else:
 			word_id = word_row[0]
 		return word_id
+	def add_path(self, origin, position, current_word, next_word):
+		self.cursor.execute("INSERT INTO wordpaths (position, current, next, origin_id) VALUES (?, ?, ?, ?)", (position, current_word, next_word, origin))

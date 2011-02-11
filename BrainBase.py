@@ -3,7 +3,7 @@ import time
 
 class BrainBase:
 	def connect(self):
-		self.filename = './brainbase.db'
+		self.filename = './brainbase.sqlite'
 		self.connection = sqlite3.connect(self.filename)
 		self.cursor = self.connection.cursor()
 	def create_tables(self):

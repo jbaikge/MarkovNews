@@ -31,6 +31,21 @@ class BrainBase:
 		for sql in creates:
 			self.cursor.execute(sql)
 		self.connection.commit()
+	def get_id(self, object_type, definition):
+		valid_types = {
+			"category": {"table": "categories", "fields": ["name"]},
+			"origin": {"table": "origins", "fields": ["url", "added"]},
+			"word": {"table": "words", "fields": ["word"]}
+		}
+		if object_type not in valid_types:
+			raise KeyError
+		definition_keys = definition.keys()
+		fields = valid_types[object_type].fields
+		definition_keys.sort()
+		fields.sort()
+		if definition_keys == fields:
+			raise AttributeError
+		
 
 class Category(BrainBase):
 	def __init__(self, name):

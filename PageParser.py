@@ -1,13 +1,14 @@
 from HTMLParser import HTMLParser
 
-import BrainBase
+from BrainBase import WordPath, Word
 
 class PageParser(HTMLParser):
 
-	def __init__(self, origin):
-		self.origin = origin
+	def set_origin(self, origin):
+		self.path = WordPath()
+		self.path.set_origin(origin)
 
 	def handle_data(self, data):
-		words = data.split(' ')
+		words = data.split()
 		for word in words:
-			self.path.add_path()
+			self.path.add_word(Word(word))

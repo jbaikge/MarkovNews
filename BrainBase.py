@@ -2,6 +2,9 @@ import sqlite3
 import time
 
 class BrainBase:
+	def __init__(self):
+		self.connect()
+		self.create_tables()
 	def connect(self):
 		self.filename = './brainbase.sqlite'
 		self.connection = sqlite3.connect(self.filename)
@@ -33,19 +36,40 @@ class BrainBase:
 		self.connection.commit()
 	def get_id(self, object_type, definition):
 		valid_types = {
-			"category": {"table": "categories", "fields": ["name"]},
-			"origin": {"table": "origins", "fields": ["url", "added"]},
-			"word": {"table": "words", "fields": ["word"]}
+			"category": {
+				"table": "categories",
+				"fields": ["name"]
+			},
+			"origin": {
+				"table": "origins",
+				"fields": ["url"],
+				"inserts": 
+			},
+			"word": {
+				"table": "words",
+				"fields": ["word"]
+			}
 		}
 		if object_type not in valid_types:
 			raise KeyError
+		valid_type = valid_types[object_type]
 		definition_keys = definition.keys()
-		fields = valid_types[object_type].fields
+		fields = valid_type['fields']
 		definition_keys.sort()
 		fields.sort()
-		if definition_keys == fields:
+		if definition_keys != fields:
+			print "Required attributes:", fields, "; fields given:", definition_keys
 			raise AttributeError
-		
+		table_info = (valid_type['table'], valid_type['fields'][0])
+		self.cursor.execute("SELECT id FROM %s WHERE %s = ?" % table_info, definition.values())
+		row = self.cursor.fetchone()
+		if row is None:
+			self.cursor.execute("INSERT INTO %s (%s) VALUES (?)" % table_info, definition.values())
+			id = self.cursor.lastrowid
+			self.connection.commit()
+		else:
+			id = row[0]
+		return id
 
 class Category(BrainBase):
 	def __init__(self, name):

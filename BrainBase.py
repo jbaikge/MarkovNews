@@ -29,7 +29,8 @@ class BrainBase:
 				position INTEGER,
 				current INTEGER REFERENCES words(id) ON DELETE CASCADE,
 				next INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
-				origin_id INTEGER NOT NULL REFERENCES origins(id) ON DELETE CASCADE
+				origin_id INTEGER NOT NULL REFERENCES origins(id) ON DELETE CASCADE,
+				UNIQUE(position, origin_id)
 			)"""
 		]
 		for sql in creates:
@@ -51,17 +52,18 @@ class BrainBase:
 		if row is None:
 			self.cursor.execute("INSERT INTO %s (%s) VALUES (?)" % table_info, (value,))
 			id = self.cursor.lastrowid
-			self.connection.commit()
 		else:
 			id = row[0]
 		return id
+
+	def save(self):
+		self.connection.commit()
 
 	def add_word_path(self, origin_id, word_id):
 		if origin_id not in self.word_paths:
 			self.word_paths[origin_id] = (self.get_id("word", ""), 0)
 		(previous_word_id, position) = self.word_paths[origin_id]
 		path = (position, previous_word_id, word_id, origin_id)
-		self.cursor.execute("INSERT INTO wordpaths (position, current, next, origin_id) VALUES (?, ?, ?, ?)", path)
-		self.connection.commit()
+		self.cursor.execute("INSERT OR IGNORE INTO wordpaths (position, current, next, origin_id) VALUES (?, ?, ?, ?)", path)
 		self.word_paths[origin_id] = (word_id, position + 1)
 

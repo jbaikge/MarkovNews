@@ -14,3 +14,6 @@ class PageParser(HTMLParser):
 			print word,
 			word_id = self.brainbase.get_id("word", word)
 			self.brainbase.add_word_path(self.origin_id, word_id)
+
+	def save(self):
+		self.brainbase.save()

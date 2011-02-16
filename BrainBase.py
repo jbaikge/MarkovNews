@@ -2,14 +2,22 @@ import sqlite3
 import time
 
 class BrainBase:
+	types = {
+		"category": ("categories", "name"),
+		"origin": ("origins", "url"),
+		"word": ("words", "word")
+	}
+
 	def __init__(self):
 		self.connect()
 		self.create_tables()
 		self.word_paths = {}
+
 	def connect(self):
 		self.filename = './brainbase.sqlite'
 		self.connection = sqlite3.connect(self.filename)
 		self.cursor = self.connection.cursor()
+
 	def create_tables(self):
 		creates = [
 			"""CREATE TABLE IF NOT EXISTS categories (
@@ -37,23 +45,23 @@ class BrainBase:
 			self.cursor.execute(sql)
 		self.connection.commit()
 
-	def get_id(self, object_type, value):
-		types = {
-			"category": ("categories", "name"),
-			"origin": ("origins", "url"),
-			"word": ("words", "word")
-		}
-		if object_type not in types:
+	def exists(self, object_type, value):
+		if object_type not in self.types:
 			raise KeyError
-		table_info = types[object_type]
-		value = value.decode('utf-8')
+		table_info = self.types[object_type]
 		self.cursor.execute("SELECT id FROM %s WHERE %s = ?" % table_info, (value,))
 		row = self.cursor.fetchone()
 		if row is None:
-			self.cursor.execute("INSERT INTO %s (%s) VALUES (?)" % table_info, (value,))
-			id = self.cursor.lastrowid
+			id = 0
 		else:
 			id = row[0]
+		return id
+
+	def get_id(self, object_type, value):
+		id = self.exists(object_type, value)
+		if id == 0:
+			self.cursor.execute("INSERT INTO %s (%s) VALUES (?)" % self.types[object_type], (value,))
+			id = self.cursor.lastrowid
 		return id
 
 	def save(self):

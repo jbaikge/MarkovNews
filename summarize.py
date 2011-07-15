@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
 	query = """SELECT b.word2, a.word1, b.word1, w1.word, w2.word
 		FROM wordpaths a
-			LEFT JOIN wordpaths b ON(a.word2 = b.word1 AND a.position + 1 = b.position)
+			LEFT JOIN wordpaths b ON(a.word2 = b.word1 AND a.position + 1 = b.position AND a.origin_id = b.origin_id)
 			LEFT JOIN words w1 ON(a.word1 = w1.id)
 			LEFT JOIN words w2 ON(b.word1 = w2.id)
 		WHERE a.word1 = ?

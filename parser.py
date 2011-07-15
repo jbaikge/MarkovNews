@@ -118,8 +118,11 @@ if __name__ == "__main__":
 	for rss in rss_urls():
 		print " RSS: %s" % (rss,)
 		for link in feed_links(rss):
-			print "  Link: %s" % (link,)
-			words = get_words_from_url(link)
-			if add_words(connection, link, words):
-				database_commit(connection)
-			print "   Wordcount: %d" % (len(words),)
+			print " ", link.split('/')[-2],
+			if get_origin_id(connection, link):
+				print "Stored"
+			else:
+				words = get_words_from_url(link)
+				if add_words(connection, link, words):
+					database_commit(connection)
+				print "Wordcount: %d" % (len(words),)

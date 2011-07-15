@@ -28,8 +28,6 @@ if __name__ == "__main__":
 		result = connection.execute(query, (id,))
 		row = result.fetchone()
 
-		print row
-
 		# Not sure what causes this yet
 		if row[0] == None:
 			break

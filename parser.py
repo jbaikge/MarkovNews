@@ -104,6 +104,10 @@ def get_words_from_url(url):
 	parser.feed(contents)
 	return parser.words + ['']
 
+def has_origin(connection, url):
+	result = connection.execute("SELECT id FROM origins WHERE url = ?", (url,))
+	return result.fetchone() != None
+
 def rss_urls():
 	return [
 		"http://www.theregister.co.uk/headlines.atom",
@@ -119,10 +123,10 @@ if __name__ == "__main__":
 		print " RSS: %s" % (rss,)
 		for link in feed_links(rss):
 			print " ", link.split('/')[-2],
-			if get_origin_id(connection, link):
+			if has_origin(connection, link):
 				print "Stored"
 			else:
 				words = get_words_from_url(link)
 				if add_words(connection, link, words):
 					database_commit(connection)
-				print "Wordcount: %d" % (len(words),)
+				print len(words)

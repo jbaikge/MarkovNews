@@ -26,6 +26,22 @@ class PageParser(HTMLParser):
 		self.collect_data = self.collect_data or tag in self.allow_tags
 		self.collect_data = self.collect_data and len(attrs) == 0
 
+class TheRegisterPageParser(PageParser):
+	in_body = False
+	sub_divs = -1
+
+	def handle_endtag(self, tag):
+		self.in_body = self.in_body and (tag != 'div' or self.sub_divs > 0)
+		self.collect_data = self.in_body
+		if self.in_body and tag == 'div':
+			self.sub_divs -= 1
+
+	def handle_starttag(self, tag, attrs):
+		self.in_body = self.in_body or (tag == 'div' and ('id', 'body') in attrs)
+		self.collect_data = self.in_body and tag not in self.ignore_tags
+		if self.in_body and tag == 'div':
+			self.sub_divs += 1
+
 def create_tables(connection):
 	creates = [
 		"""CREATE TABLE IF NOT EXISTS categories (
@@ -100,7 +116,7 @@ def get_word_id(connection, word):
 
 def get_words_from_url(url):
 	contents = urllib2.urlopen(url).read().decode('utf-8')
-	parser = PageParser()
+	parser = TheRegisterPageParser()
 	parser.feed(contents)
 	return parser.words + ['']
 
@@ -111,6 +127,7 @@ def has_origin(connection, url):
 def rss_urls():
 	return [
 		"http://www.theregister.co.uk/headlines.atom",
+		"http://www.theregister.co.uk/odds/headlines.atom",
 	]
 
 if __name__ == "__main__":

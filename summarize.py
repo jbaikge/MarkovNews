@@ -9,11 +9,15 @@ if __name__ == "__main__":
 	connection = database_connect()
 
 	print "Determining seed word"
-	result = connection.execute("SELECT id FROM words WHERE id > 1 ORDER BY RANDOM() LIMIT 1")
-	seed_id = result.fetchone()[0]
-	print "Seed ID:", seed_id
+	result = connection.execute("""SELECT word1, word2
+		FROM wordpaths
+		WHERE word1 > 1 AND word2 > 1
+		ORDER BY RANDOM()
+		LIMIT 1""")
+	word1_id, word2_id = result.fetchone()
+	print "Seed IDs:", word1_id, word2_id
 
-	query = """SELECT paths_b.word2, words_b.word
+	query = """SELECT paths_b.word1, paths_b.word2, words_b.word
 		FROM wordpaths paths_a
 			LEFT JOIN wordpaths paths_b ON(
 				paths_a.word2 = paths_b.word1
@@ -22,17 +26,18 @@ if __name__ == "__main__":
 			)
 			LEFT JOIN words words_b ON(paths_b.word1 = words_b.id)
 		WHERE paths_a.word1 = ?
+			AND paths_a.word2 = ?
 		ORDER BY RANDOM()
 		LIMIT 1"""
 	
 	words = []
-	id = seed_id
 	for _ in range(1, 100):
-		result = connection.execute(query, (id,))
+		result = connection.execute(query, (word1_id, word2_id))
 		row = result.fetchone()
-		if row == None:
+		if row == None or row[0] == None:
 			break
-		id, word = row
+		print row
+		word1_id, word2_id, word = row
 		if word == '':
 			break;
 		words.append(word)
